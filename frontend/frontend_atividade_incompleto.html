@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Trabalho - Upload Múltiplo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+      :root{
+        --accent:#7c3aed;
+        --accent-2:#06b6d4;
+        --card:#ffffff;
+        --muted:#6b7280;
+      }
+      html,body{height:100%}
+      body {
+        font-family: "Inter", sans-serif;
+        background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.08), transparent 8%),
+                    radial-gradient(900px 400px at 90% 90%, rgba(6,182,212,0.06), transparent 6%),
+                    linear-gradient(180deg,#0f172a 0%, #0b1220 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+        color: #e6eef8;
+      }
+      .container {
+        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        border: 1px solid rgba(255,255,255,0.06);
+        backdrop-filter: blur(6px);
+        padding: 28px;
+        border-radius: 14px;
+        width: 100%;
+        max-width: 780px;
+        box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+      }
+      header { display:flex; gap:16px; align-items:center; margin-bottom:18px; }
+      .brand {
+        display:flex; flex-direction:column;
+      }
+      .logo {
+        width:56px; height:56px; border-radius:12px;
+        background: linear-gradient(135deg,var(--accent),var(--accent-2));
+        display:flex; align-items:center; justify-content:center;
+        font-weight:700; color:#fff; font-size:18px;
+        box-shadow: 0 6px 20px rgba(124,58,237,0.24);
+      }
+      h1 { font-size:1.25rem; margin:0; color:#f8fafc; }
+      .subtitle { margin:0; font-size:0.9rem; color:var(--muted); }
+      .card {
+        margin-top:10px; background: var(--card); color:#061226; padding:18px;
+        border-radius:12px; border:1px solid rgba(2,6,23,0.06);
+      }
+      .drop-area {
+        border: 2px dashed rgba(9,10,18,0.06);
+        border-radius:10px; padding:18px; display:flex; gap:12px; align-items:center;
+        transition: background 0.15s, border-color 0.15s, box-shadow 0.15s;
+        cursor: pointer;
+      }
+      .drop-area.dragover {
+        background: linear-gradient(90deg, rgba(124,58,237,0.06), rgba(6,182,212,0.04));
+        border-color: rgba(124,58,237,0.6);
+        box-shadow: 0 8px 30px rgba(124,58,237,0.08);
+      }
+      .drop-text { color:#475569; font-weight:600; }
+      input[type="file"]{ display:none; }
+      .controls { display:flex; gap:12px; margin-top:12px; align-items:center; }
+      button.primary {
+        background: linear-gradient(90deg,var(--accent),var(--accent-2));
+        color:white; padding:10px 14px; border-radius:10px; border:none; font-weight:700;
+        cursor:pointer; box-shadow: 0 8px 20px rgba(6,182,212,0.08);
+      }
+      button.primary:disabled { opacity:0.6; cursor:not-allowed; }
+      .info { color:var(--muted); font-size:0.9rem; }
+      .preview-grid { display:flex; gap:10px; flex-wrap:wrap; margin-top:14px; }
+      .thumb {
+        width:92px; height:72px; border-radius:8px; overflow:hidden; position:relative;
+        background:#f8fafc; border:1px solid rgba(2,6,23,0.04);
+        display:flex; align-items:center; justify-content:center; font-size:12px;
+      }
+      .thumb img{ width:100%; height:100%; object-fit:cover; display:block; }
+      .thumb .remove {
+        position:absolute; top:6px; right:6px; background:rgba(0,0,0,0.5); color:#fff;
+        width:22px; height:22px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+        cursor:pointer; font-size:12px;
+      }
+      .message-box { margin-top:14px; padding:12px; border-radius:8px; display:none; font-weight:600; }
+      .message-box.success{ background:#ecfdf5; color:#065f46; border:1px solid #34d399; display:block; }
+      .message-box.error{ background:#fff1f2; color:#9f1239; border:1px solid #fb7185; display:block; }
+      footer { margin-top:14px; color:rgba(226,239,248,0.7); font-size:0.85rem; text-align:right; }
+      @media (max-width:640px){
+        .thumb{ width:72px; height:56px; }
+        header{gap:10px}
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">UP</div>
+        <div class="brand">
+          <h1>Atividade: Upload Múltiplo</h1>
+          <p class="subtitle">Envie até 10 imagens (PNG/JPEG). Interface modernizada com pré-visualização.</p>
+        </div>
+      </header>
+
+      <div class="card">
+        <label class="drop-area" id="dropArea" tabindex="0">
+          <div style="flex:1">
+            <div class="drop-text">Arraste e solte imagens aqui <span style="color:var(--accent)">ou clique</span></div>
+            <div class="info">Aceito: PNG, JPG — Máx 10 arquivos — Máx por arquivo 5MB</div>
+          </div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;">
+            <button id="selectBtn" class="primary" type="button">Selecionar</button>
+          </div>
+          <input type="file" id="arquivoInput" name="meusArquivos" multiple accept="image/png, image/jpeg" />
+        </label>
+
+        <div class="preview-grid" id="previewGrid" aria-live="polite"></div>
+
+        <div class="controls">
+          <div class="info" id="countInfo">Nenhum arquivo selecionado</div>
+          <div style="flex:1"></div>
+          <button id="enviarBtn" class="primary">Enviar Arquivos</button>
+        </div>
+
+        <div id="messageBox" class="message-box"></div>
+      </div>
+
+      <footer>Projeto personalizado • Frontend estilizado</footer>
+    </div>
+
+    <script>
+      const arquivoInput = document.getElementById("arquivoInput");
+      const selectBtn = document.getElementById("selectBtn");
+      const dropArea = document.getElementById("dropArea");
+      const previewGrid = document.getElementById("previewGrid");
+      const enviarBtn = document.getElementById("enviarBtn");
+      const messageBox = document.getElementById("messageBox");
+      const countInfo = document.getElementById("countInfo");
+      const MAX_FILES = 10;
+      const ALLOWED = ["image/png","image/jpeg"];
+
+      function showMessage(text, type="success"){
+        messageBox.textContent = text;
+        messageBox.className = "message-box " + (type==="error"?"error":"success");
+      }
+
+      function clearMessage(){
+        messageBox.textContent = ""; messageBox.className = "message-box";
+      }
+
+      selectBtn.addEventListener("click", () => arquivoInput.click());
+      dropArea.addEventListener("click", () => arquivoInput.click());
+
+      ["dragenter","dragover"].forEach(ev => {
+        dropArea.addEventListener(ev, (e) => {
+          e.preventDefault(); e.stopPropagation();
+          dropArea.classList.add("dragover");
+        });
+      });
+
+      ["dragleave","drop"].forEach(ev => {
+        dropArea.addEventListener(ev, (e) => {
+          e.preventDefault(); e.stopPropagation();
+          dropArea.classList.remove("dragover");
+        });
+      });
+
+      dropArea.addEventListener("drop", (e) => {
+        const dt = e.dataTransfer;
+        if (!dt) return;
+        const files = Array.from(dt.files);
+        pushFiles(files);
+      });
+
+      arquivoInput.addEventListener("change", () => {
+        pushFiles(Array.from(arquivoInput.files));
+      });
+
+      function pushFiles(files){
+        clearMessage();
+        // merge with existing selected files shown in preview
+        const existingFiles = Array.from(previewGrid.querySelectorAll(".thumb")).map(t => t._file).filter(Boolean);
+        const combined = existingFiles.concat(files);
+        if (combined.length > MAX_FILES){
+          showMessage("NÃO É POSSÍVEL ENVIAR MAIS DE 10 ARQUIVOS.", "error");
+          arquivoInput.value = "";
+          return;
+        }
+
+        // filter allowed types
+        const valid = combined.filter(f => ALLOWED.includes(f.type));
+        if (valid.length !== combined.length){
+          showMessage("Alguns arquivos foram ignorados: apenas PNG/JPEG permitidos.", "error");
+        }
+
+        // render previews
+        renderPreviews(valid);
+      }
+
+      function renderPreviews(files){
+        previewGrid.innerHTML = "";
+        files.forEach((file, idx) => {
+          const div = document.createElement("div");
+          div.className = "thumb";
+          div._file = file;
+
+          const img = document.createElement("img");
+          const reader = new FileReader();
+          reader.onload = (e) => img.src = e.target.result;
+          reader.readAsDataURL(file);
+
+          const removeBtn = document.createElement("div");
+          removeBtn.className = "remove";
+          removeBtn.innerHTML = "✕";
+          removeBtn.title = "Remover";
+          removeBtn.addEventListener("click", () => {
+            const remaining = Array.from(previewGrid.querySelectorAll(".thumb")).map(t => t._file).filter(f=>f !== file);
+            renderPreviews(remaining);
+          });
+
+          div.appendChild(img);
+          div.appendChild(removeBtn);
+          previewGrid.appendChild(div);
+        });
+
+        countInfo.textContent = files.length === 0 ? "Nenhum arquivo selecionado" : files.length + " arquivo(s) selecionado(s)";
+        // update hidden file input using DataTransfer (so form input matches previews)
+        const dt = new DataTransfer();
+        files.forEach(f => dt.items.add(f));
+        arquivoInput.files = dt.files;
+      }
+
+      enviarBtn.addEventListener("click", async () => {
+        clearMessage();
+        const files = arquivoInput.files;
+        if (!files || files.length === 0){
+          showMessage("Nenhum arquivo selecionado.", "error");
+          return;
+        }
+        if (files.length > MAX_FILES){
+          showMessage("NÃO É POSSÍVEL ENVIAR MAIS DE 10 ARQUIVOS.", "error");
+          return;
+        }
+
+        enviarBtn.disabled = true;
+        enviarBtn.textContent = "Enviando...";
+
+        try {
+          const formData = new FormData();
+          for (const f of files) formData.append("meusArquivos", f);
+
+          const res = await fetch("http://localhost:3000/upload", {
+            method: "POST",
+            body: formData
+          });
+
+          const data = await res.json();
+          if (res.ok){
+            showMessage(data.message || "Arquivos enviados com sucesso!");
+            // limpa seleção
+            arquivoInput.value = "";
+            renderPreviews([]);
+          } else {
+            showMessage(data.error || "Erro no servidor.", "error");
+          }
+        } catch (err){
+          console.error(err);
+          showMessage("Erro de conexão com o servidor.", "error");
+        } finally {
+          enviarBtn.disabled = false;
+          enviarBtn.textContent = "Enviar Arquivos";
+        }
+      });
+    </script>
+  </body>
+</html>
