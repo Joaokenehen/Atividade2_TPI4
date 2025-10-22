@@ -6,8 +6,16 @@ const multer = require("multer");
 const fs = require("fs");
 const cors = require("cors");
 
-app.use(cors());
+// --- Novas importações ---
+const bcrypt = require('bcryptjs');
+const userModel = require('./models/userModel'); // Importa o modelo de usuário
 
+app.use(cors());
+// --- Adição importante ---
+// Habilita o parsing de JSON no corpo das requisições
+app.use(express.json()); 
+
+// --- Lógica de Upload (do seu arquivo original) ---
 const createUploadDirectory = (dir) => {
   if (!fs.existsSync(dir)) {
     fs.mkdirSync(dir, { recursive: true });
@@ -28,7 +36,6 @@ const fileFilter = (req, file, cb) => {
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const MAX_FILES = 10;
-
 const uploadDir = "uploads/";
 createUploadDirectory(uploadDir);
 
@@ -53,7 +60,7 @@ const upload = multer({
   },
 });
 
-app.get("/", (req, res) => res.send("Servidor de upload funcionando!"));
+app.get("/", (req, res) => res.send("Servidor de upload e registro funcionando!"));
 
 app.post("/upload", (req, res) => {
   upload.array("meusArquivos", MAX_FILES)(req, res, (err) => {
@@ -80,5 +87,41 @@ app.post("/upload", (req, res) => {
     });
   });
 });
+
+// --- NOVA ROTA DE CADASTRO (Implementação Obrigatória) ---
+app.post("/register", async (req, res) => {
+  try {
+    const { username, email, password } = req.body;
+
+    // 1. Validação simples de entrada
+    if (!username || !email || !password) {
+      return res.status(400).json({ error: "Todos os campos são obrigatórios." });
+    }
+
+    // 2. Verificar se o usuário já existe
+    const existingUser = userModel.findByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ error: "Este nome de usuário já está em uso." });
+    }
+
+    // 3. Gerar o hash da senha (Req. 2)
+    const passwordHash = await bcrypt.hash(password, 10); // 10 é o custo (salt rounds)
+
+    // 4. Salvar o novo usuário no modelo (Req. 1)
+    userModel.addUser({
+      username,
+      email,
+      passwordHash // Salva o hash, não a senha pura
+    });
+
+    // 5. Retornar sucesso (Req. 3)
+    res.status(201).json({ message: "Usuário cadastrado com sucesso!" });
+
+  } catch (error) {
+    console.error("Erro no registro:", error);
+    res.status(500).json({ error: "Erro interno no servidor." });
+  }
+});
+
 
 app.listen(port, () => console.log(`Servidor rodando na porta ${port}`));

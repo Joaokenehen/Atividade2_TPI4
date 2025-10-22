@@ -3,17 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Trabalho - Upload Múltiplo</title>
+    <title>Trabalho Completo: Upload e Cadastro</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
-      :root{
-        --accent:#7c3aed;
-        --accent-2:#06b6d4;
-        --card:#ffffff;
-        --muted:#6b7280;
+      :root {
+        --accent: #7c3aed;
+        --accent-2: #06b6d4;
+        --card-bg: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+        --card-border: 1px solid rgba(255,255,255,0.06);
+        --muted: #6b7280;
+        
+        /* Cores do formulário de cadastro */
+        --primary-register: #6d28d9; /* Roxo */
+        --secondary-register: #db2777; /* Pink */
       }
-      html,body{height:100%}
+      html, body { height: 100%; }
       body {
         font-family: "Inter", sans-serif;
         background: radial-gradient(1200px 600px at 10% 10%, rgba(124,58,237,0.08), transparent 8%),
@@ -25,20 +30,36 @@
         padding: 32px;
         color: #e6eef8;
       }
-      .container {
-        background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
-        border: 1px solid rgba(255,255,255,0.06);
+      
+      /* Container principal que agrupa os dois */
+      .main-container {
+        width: 100%;
+        max-width: 1200px; /* Aumentado para comportar os dois lado a lado */
+        display: flex;
+        flex-direction: column; /* Pilha em mobile por padrão */
+        gap: 24px;
+      }
+
+      /* Estilo base para os dois cards */
+      .card-module {
+        background: var(--card-bg);
+        border: var(--card-border);
         backdrop-filter: blur(6px);
         padding: 28px;
         border-radius: 14px;
-        width: 100%;
-        max-width: 780px;
         box-shadow: 0 10px 30px rgba(2,6,23,0.6);
+        flex: 1; /* Para que ocupem espaço igual */
       }
+
+      @media (min-width: 1024px) { /* Em telas grandes (lg), fica lado a lado */
+        .main-container {
+          flex-direction: row;
+        }
+      }
+
+      /* --- Estilos do Upload (do seu arquivo original) --- */
       header { display:flex; gap:16px; align-items:center; margin-bottom:18px; }
-      .brand {
-        display:flex; flex-direction:column;
-      }
+      .brand { display:flex; flex-direction:column; }
       .logo {
         width:56px; height:56px; border-radius:12px;
         background: linear-gradient(135deg,var(--accent),var(--accent-2));
@@ -49,7 +70,7 @@
       h1 { font-size:1.25rem; margin:0; color:#f8fafc; }
       .subtitle { margin:0; font-size:0.9rem; color:var(--muted); }
       .card {
-        margin-top:10px; background: var(--card); color:#061226; padding:18px;
+        margin-top:10px; background: #ffffff; color:#061226; padding:18px;
         border-radius:12px; border:1px solid rgba(2,6,23,0.06);
       }
       .drop-area {
@@ -88,192 +109,326 @@
       .message-box { margin-top:14px; padding:12px; border-radius:8px; display:none; font-weight:600; }
       .message-box.success{ background:#ecfdf5; color:#065f46; border:1px solid #34d399; display:block; }
       .message-box.error{ background:#fff1f2; color:#9f1239; border:1px solid #fb7185; display:block; }
-      footer { margin-top:14px; color:rgba(226,239,248,0.7); font-size:0.85rem; text-align:right; }
-      @media (max-width:640px){
-        .thumb{ width:72px; height:56px; }
-        header{gap:10px}
+      
+      /* --- Estilos do Cadastro (da minha sugestão anterior) --- */
+      .form-input {
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #e6eef8;
+        width: 100%; padding: 0.5rem 1rem; border-radius: 0.375rem; /* py-2 px-4 rounded-md */
+        transition: all 0.2s;
+      }
+      .form-input:focus {
+        background: rgba(255,255,255,0.1);
+        border-color: var(--primary-register);
+        box-shadow: 0 0 0 2px rgba(109, 40, 217, 0.5);
+        outline: none;
+      }
+      .submit-btn {
+        background: linear-gradient(90deg, var(--primary-register), var(--secondary-register));
+        transition: transform 0.2s, box-shadow 0.2s;
+        width: 100%; color: white; font-weight: 700;
+        padding: 0.75rem 1rem; border-radius: 0.375rem; /* py-3 px-4 rounded-md */
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+      }
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(109, 40, 217, 0.2), 0 6px 10px rgba(219, 39, 119, 0.1);
+      }
+      .submit-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+      /* Caixa de msg específica do cadastro */
+      #registerMessageBox {
+        margin-top: 1.25rem; /* mt-5 */
+        text-align: center;
+        padding: 0.75rem; /* p-3 */
+        border-radius: 0.375rem; /* rounded-md */
+        font-weight: 600; /* font-semibold */
       }
     </style>
   </head>
   <body>
-    <div class="container">
-      <header>
-        <div class="logo">UP</div>
-        <div class="brand">
-          <h1>Atividade: Upload Múltiplo</h1>
-          <p class="subtitle">Envie até 10 imagens (PNG/JPEG). Interface modernizada com pré-visualização.</p>
-        </div>
-      </header>
+    
+    <div class="main-container">
 
-      <div class="card">
-        <label class="drop-area" id="dropArea" tabindex="0">
-          <div style="flex:1">
-            <div class="drop-text">Arraste e solte imagens aqui <span style="color:var(--accent)">ou clique</span></div>
-            <div class="info">Aceito: PNG, JPG — Máx 10 arquivos — Máx por arquivo 5MB</div>
+      <div class="card-module">
+        <header>
+          <div class="logo">UP</div>
+          <div class="brand">
+            <h1>Atividade: Upload Múltiplo</h1>
+            <p class="subtitle">Envie até 10 imagens (PNG/JPEG).</p>
           </div>
-          <div style="display:flex;flex-direction:column;align-items:flex-end;">
-            <button id="selectBtn" class="primary" type="button">Selecionar</button>
+        </header>
+
+        <div class="card">
+          <label class="drop-area" id="dropArea" tabindex="0">
+            <div style="flex:1">
+              <div class="drop-text">Arraste e solte imagens aqui <span style="color:var(--accent)">ou clique</span></div>
+              <div class="info">Aceito: PNG, JPG — Máx 10 arquivos — Máx por arquivo 5MB</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;">
+              <button id="selectBtn" class="primary" type="button">Selecionar</button>
+            </div>
+            <input type="file" id="arquivoInput" name="meusArquivos" multiple accept="image/png, image/jpeg" />
+          </label>
+
+          <div class="preview-grid" id="previewGrid" aria-live="polite"></div>
+
+          <div class="controls">
+            <div class="info" id="countInfo">Nenhum arquivo selecionado</div>
+            <div style="flex:1"></div>
+            <button id="enviarBtn" class="primary">Enviar Arquivos</button>
           </div>
-          <input type="file" id="arquivoInput" name="meusArquivos" multiple accept="image/png, image/jpeg" />
-        </label>
 
-        <div class="preview-grid" id="previewGrid" aria-live="polite"></div>
-
-        <div class="controls">
-          <div class="info" id="countInfo">Nenhum arquivo selecionado</div>
-          <div style="flex:1"></div>
-          <button id="enviarBtn" class="primary">Enviar Arquivos</button>
+          <div id="uploadMessageBox" class="message-box"></div>
         </div>
-
-        <div id="messageBox" class="message-box"></div>
       </div>
 
-      <footer>Projeto personalizado • Frontend estilizado</footer>
-    </div>
+      <div class="card-module">
+        <header>
+          <div class="logo" style="background: linear-gradient(135deg, var(--primary-register), var(--secondary-register)); box-shadow: 0 6px 20px rgba(109, 40, 217, 0.24);">RG</div>
+          <div class="brand">
+            <h1>Criar Conta</h1>
+            <p class="subtitle">Junte-se à plataforma com segurança (Bcrypt).</p>
+          </div>
+        </header>
+
+        <form id="registerForm" class="space-y-5 mt-4">
+          
+          <div>
+            <label for="username" class="block text-sm font-semibold mb-2 text-gray-300">Nome de Usuário</label>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              required 
+              class="form-input"
+              placeholder="ex: joaosilva"
+            />
+          </div>
+          
+          <div>
+            <label for="email" class="block text-sm font-semibold mb-2 text-gray-300">Email</label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              required 
+              class="form-input"
+              placeholder="voce@exemplo.com"
+            />
+          </div>
+          
+          <div>
+            <label for="password" class="block text-sm font-semibold mb-2 text-gray-300">Senha</label>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              required 
+              class="form-input"
+              placeholder="••••••••"
+            />
+          </div>
+          
+          <button 
+            type="submit" 
+            id="registerSubmitButton"
+            class="submit-btn"
+          >
+            Cadastrar
+          </button>
+        </form>
+
+        <div id="registerMessageBox" class="hidden"></div>
+      </div>
+
+    </div> <script>
+      (function() {
+        const arquivoInput = document.getElementById("arquivoInput");
+        const selectBtn = document.getElementById("selectBtn");
+        const dropArea = document.getElementById("dropArea");
+        const previewGrid = document.getElementById("previewGrid");
+        const enviarBtn = document.getElementById("enviarBtn");
+        const messageBox = document.getElementById("uploadMessageBox"); // ID atualizado
+        const countInfo = document.getElementById("countInfo");
+        const MAX_FILES = 10;
+        const ALLOWED = ["image/png","image/jpeg"];
+
+        function showMessage(text, type="success"){
+          messageBox.textContent = text;
+          messageBox.className = "message-box " + (type==="error"?"error":"success");
+        }
+        function clearMessage(){
+          messageBox.textContent = ""; messageBox.className = "message-box";
+        }
+
+        selectBtn.addEventListener("click", () => arquivoInput.click());
+        dropArea.addEventListener("click", () => arquivoInput.click());
+
+        ["dragenter","dragover"].forEach(ev => {
+          dropArea.addEventListener(ev, (e) => {
+            e.preventDefault(); e.stopPropagation();
+            dropArea.classList.add("dragover");
+          });
+        });
+        ["dragleave","drop"].forEach(ev => {
+          dropArea.addEventListener(ev, (e) => {
+            e.preventDefault(); e.stopPropagation();
+            dropArea.classList.remove("dragover");
+          });
+        });
+
+        dropArea.addEventListener("drop", (e) => {
+          const dt = e.dataTransfer;
+          if (!dt) return;
+          const files = Array.from(dt.files);
+          pushFiles(files);
+        });
+
+        arquivoInput.addEventListener("change", () => {
+          pushFiles(Array.from(arquivoInput.files));
+        });
+
+        function pushFiles(files){
+          clearMessage();
+          const existingFiles = Array.from(previewGrid.querySelectorAll(".thumb")).map(t => t._file).filter(Boolean);
+          const combined = existingFiles.concat(files);
+          if (combined.length > MAX_FILES){
+            showMessage("NÃO É POSSÍVEL ENVIAR MAIS DE 10 ARQUIVOS.", "error");
+            arquivoInput.value = "";
+            return;
+          }
+          const valid = combined.filter(f => ALLOWED.includes(f.type));
+          if (valid.length !== combined.length){
+            showMessage("Alguns arquivos foram ignorados: apenas PNG/JPEG permitidos.", "error");
+          }
+          renderPreviews(valid);
+        }
+
+        function renderPreviews(files){
+          previewGrid.innerHTML = "";
+          files.forEach((file, idx) => {
+            const div = document.createElement("div");
+            div.className = "thumb";
+            div._file = file;
+            const img = document.createElement("img");
+            const reader = new FileReader();
+            reader.onload = (e) => img.src = e.target.result;
+            reader.readAsDataURL(file);
+            const removeBtn = document.createElement("div");
+            removeBtn.className = "remove";
+            removeBtn.innerHTML = "✕";
+            removeBtn.title = "Remover";
+            removeBtn.addEventListener("click", () => {
+              const remaining = Array.from(previewGrid.querySelectorAll(".thumb")).map(t => t._file).filter(f=>f !== file);
+              renderPreviews(remaining);
+            });
+            div.appendChild(img);
+            div.appendChild(removeBtn);
+            previewGrid.appendChild(div);
+          });
+
+          countInfo.textContent = files.length === 0 ? "Nenhum arquivo selecionado" : files.length + " arquivo(s) selecionado(s)";
+          const dt = new DataTransfer();
+          files.forEach(f => dt.items.add(f));
+          arquivoInput.files = dt.files;
+        }
+
+        enviarBtn.addEventListener("click", async () => {
+          clearMessage();
+          const files = arquivoInput.files;
+          if (!files || files.length === 0){
+            showMessage("Nenhum arquivo selecionado.", "error");
+            return;
+          }
+          if (files.length > MAX_FILES){
+            showMessage("NÃO É POSSÍVEL ENVIAR MAIS DE 10 ARQUIVOS.", "error");
+            return;
+          }
+          enviarBtn.disabled = true;
+          enviarBtn.textContent = "Enviando...";
+          try {
+            const formData = new FormData();
+            for (const f of files) formData.append("meusArquivos", f);
+            const res = await fetch("http://localhost:3000/upload", {
+              method: "POST",
+              body: formData
+            });
+            const data = await res.json();
+            if (res.ok){
+              showMessage(data.message || "Arquivos enviados com sucesso!");
+              arquivoInput.value = "";
+              renderPreviews([]);
+            } else {
+              showMessage(data.error || "Erro no servidor.", "error");
+            }
+          } catch (err){
+            console.error(err);
+            showMessage("Erro de conexão com o servidor.", "error");
+          } finally {
+            enviarBtn.disabled = false;
+            enviarBtn.textContent = "Enviar Arquivos";
+          }
+        });
+      })(); // IIFE para isolar o escopo
+    </script>
+
 
     <script>
-      const arquivoInput = document.getElementById("arquivoInput");
-      const selectBtn = document.getElementById("selectBtn");
-      const dropArea = document.getElementById("dropArea");
-      const previewGrid = document.getElementById("previewGrid");
-      const enviarBtn = document.getElementById("enviarBtn");
-      const messageBox = document.getElementById("messageBox");
-      const countInfo = document.getElementById("countInfo");
-      const MAX_FILES = 10;
-      const ALLOWED = ["image/png","image/jpeg"];
+      (function() {
+        const form = document.getElementById('registerForm');
+        const messageBox = document.getElementById('registerMessageBox'); // ID atualizado
+        const submitButton = document.getElementById('registerSubmitButton'); // ID atualizado
 
-      function showMessage(text, type="success"){
-        messageBox.textContent = text;
-        messageBox.className = "message-box " + (type==="error"?"error":"success");
-      }
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const username = document.getElementById('username').value;
+          const email = document.getElementById('email').value;
+          const password = document.getElementById('password').value;
 
-      function clearMessage(){
-        messageBox.textContent = ""; messageBox.className = "message-box";
-      }
+          // Limpa mensagens anteriores
+          messageBox.className = "hidden";
+          messageBox.textContent = "";
+          submitButton.disabled = true;
+          submitButton.textContent = "Enviando...";
 
-      selectBtn.addEventListener("click", () => arquivoInput.click());
-      dropArea.addEventListener("click", () => arquivoInput.click());
+          try {
+            const res = await fetch('http://localhost:3000/register', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({ username, email, password })
+            });
 
-      ["dragenter","dragover"].forEach(ev => {
-        dropArea.addEventListener(ev, (e) => {
-          e.preventDefault(); e.stopPropagation();
-          dropArea.classList.add("dragover");
-        });
-      });
+            const data = await res.json();
 
-      ["dragleave","drop"].forEach(ev => {
-        dropArea.addEventListener(ev, (e) => {
-          e.preventDefault(); e.stopPropagation();
-          dropArea.classList.remove("dragover");
-        });
-      });
+            if (res.status === 201) { // Created
+              messageBox.className = "mt-5 text-center p-3 rounded-md font-semibold bg-green-100 text-green-800 border border-green-300";
+              messageBox.textContent = data.message;
+              form.reset();
+            } else { // Erro (400, 500, etc)
+              messageBox.className = "mt-5 text-center p-3 rounded-md font-semibold bg-red-100 text-red-800 border border-red-300";
+              messageBox.textContent = data.error || "Erro desconhecido.";
+            }
 
-      dropArea.addEventListener("drop", (e) => {
-        const dt = e.dataTransfer;
-        if (!dt) return;
-        const files = Array.from(dt.files);
-        pushFiles(files);
-      });
-
-      arquivoInput.addEventListener("change", () => {
-        pushFiles(Array.from(arquivoInput.files));
-      });
-
-      function pushFiles(files){
-        clearMessage();
-        // merge with existing selected files shown in preview
-        const existingFiles = Array.from(previewGrid.querySelectorAll(".thumb")).map(t => t._file).filter(Boolean);
-        const combined = existingFiles.concat(files);
-        if (combined.length > MAX_FILES){
-          showMessage("NÃO É POSSÍVEL ENVIAR MAIS DE 10 ARQUIVOS.", "error");
-          arquivoInput.value = "";
-          return;
-        }
-
-        // filter allowed types
-        const valid = combined.filter(f => ALLOWED.includes(f.type));
-        if (valid.length !== combined.length){
-          showMessage("Alguns arquivos foram ignorados: apenas PNG/JPEG permitidos.", "error");
-        }
-
-        // render previews
-        renderPreviews(valid);
-      }
-
-      function renderPreviews(files){
-        previewGrid.innerHTML = "";
-        files.forEach((file, idx) => {
-          const div = document.createElement("div");
-          div.className = "thumb";
-          div._file = file;
-
-          const img = document.createElement("img");
-          const reader = new FileReader();
-          reader.onload = (e) => img.src = e.target.result;
-          reader.readAsDataURL(file);
-
-          const removeBtn = document.createElement("div");
-          removeBtn.className = "remove";
-          removeBtn.innerHTML = "✕";
-          removeBtn.title = "Remover";
-          removeBtn.addEventListener("click", () => {
-            const remaining = Array.from(previewGrid.querySelectorAll(".thumb")).map(t => t._file).filter(f=>f !== file);
-            renderPreviews(remaining);
-          });
-
-          div.appendChild(img);
-          div.appendChild(removeBtn);
-          previewGrid.appendChild(div);
-        });
-
-        countInfo.textContent = files.length === 0 ? "Nenhum arquivo selecionado" : files.length + " arquivo(s) selecionado(s)";
-        // update hidden file input using DataTransfer (so form input matches previews)
-        const dt = new DataTransfer();
-        files.forEach(f => dt.items.add(f));
-        arquivoInput.files = dt.files;
-      }
-
-      enviarBtn.addEventListener("click", async () => {
-        clearMessage();
-        const files = arquivoInput.files;
-        if (!files || files.length === 0){
-          showMessage("Nenhum arquivo selecionado.", "error");
-          return;
-        }
-        if (files.length > MAX_FILES){
-          showMessage("NÃO É POSSÍVEL ENVIAR MAIS DE 10 ARQUIVOS.", "error");
-          return;
-        }
-
-        enviarBtn.disabled = true;
-        enviarBtn.textContent = "Enviando...";
-
-        try {
-          const formData = new FormData();
-          for (const f of files) formData.append("meusArquivos", f);
-
-          const res = await fetch("http://localhost:3000/upload", {
-            method: "POST",
-            body: formData
-          });
-
-          const data = await res.json();
-          if (res.ok){
-            showMessage(data.message || "Arquivos enviados com sucesso!");
-            // limpa seleção
-            arquivoInput.value = "";
-            renderPreviews([]);
-          } else {
-            showMessage(data.error || "Erro no servidor.", "error");
+          } catch (err) {
+            console.error(err);
+            messageBox.className = "mt-5 text-center p-3 rounded-md font-semibold bg-red-100 text-red-800 border border-red-300";
+            messageBox.textContent = "Erro de conexão com o servidor.";
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = "Cadastrar";
           }
-        } catch (err){
-          console.error(err);
-          showMessage("Erro de conexão com o servidor.", "error");
-        } finally {
-          enviarBtn.disabled = false;
-          enviarBtn.textContent = "Enviar Arquivos";
-        }
-      });
+        });
+      })(); // IIFE para isolar o escopo
     </script>
+
   </body>
 </html>
